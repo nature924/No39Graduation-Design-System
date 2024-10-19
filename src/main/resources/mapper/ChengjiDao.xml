@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ChengjiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.jiaoshi_id as jiaoshiId
+        ,a.yonghu_id as yonghuId
+        ,a.keti_id as ketiId
+        ,a.chengji_number as chengjiNumber
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ChengjiView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,jiaoshi.jiaoshi_name as jiaoshiName
+        ,jiaoshi.jiaoshi_phone as jiaoshiPhone
+        ,jiaoshi.jiaoshi_id_number as jiaoshiIdNumber
+        ,jiaoshi.jiaoshi_email as jiaoshiEmail
+        ,keti.keti_name as ketiName
+        ,keti.keti_types as ketiTypes
+        ,keti.keti_text as ketiText
+        ,keti.jiaoshi_id as ketiJiaoshiId
+        ,keti.keti_yesno_types as ketiYesnoTypes
+        ,keti.keti_yesno_text as ketiYesnoText
+        ,yonghu.yonghu_uuid_number as yonghuUuidNumber
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_address as yonghuAddress
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.xueyuan_types as xueyuanTypes
+        ,yonghu.banji_types as banjiTypes
+        ,yonghu.yonghu_delete as yonghuDelete
+
+        FROM chengji  a
+        left JOIN jiaoshi jiaoshi ON a.jiaoshi_id = jiaoshi.id
+        left JOIN keti keti ON a.keti_id = keti.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.jiaoshiId != null and params.jiaoshiId != ''">
+                and (
+                    a.jiaoshi_id = #{params.jiaoshiId}
+                    or keti.jiaoshi_id = #{params.jiaoshiId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.ketiId != null and params.ketiId != ''">
+                and (
+                    a.keti_id = #{params.ketiId}
+                )
+            </if>
+            <if test="params.chengjiNumberStart != null and params.chengjiNumberStart != ''">
+                <![CDATA[  and a.chengji_number >= #{params.chengjiNumberStart}   ]]>
+            </if>
+            <if test="params.chengjiNumberEnd != null and params.chengjiNumberEnd != ''">
+                <![CDATA[  and a.chengji_number <= #{params.chengjiNumberEnd}   ]]>
+            </if>
+             <if test="params.chengjiNumber != null and params.chengjiNumber != ''">
+                and a.chengji_number = #{params.chengjiNumber}
+             </if>
+
+                <!-- 判断教师的id不为空 -->
+            <if test=" params.jiaoshiIdNotNull != '' and params.jiaoshiIdNotNull != null and params.jiaoshiIdNotNull != 'null' ">
+                and a.jiaoshi_id IS NOT NULL
+            </if>
+            <if test=" params.jiaoshiName != '' and params.jiaoshiName != null and params.jiaoshiName != 'null' ">
+                and jiaoshi.jiaoshi_name like CONCAT('%',#{params.jiaoshiName},'%')
+            </if>
+            <if test=" params.jiaoshiPhone != '' and params.jiaoshiPhone != null and params.jiaoshiPhone != 'null' ">
+                and jiaoshi.jiaoshi_phone like CONCAT('%',#{params.jiaoshiPhone},'%')
+            </if>
+            <if test=" params.jiaoshiIdNumber != '' and params.jiaoshiIdNumber != null and params.jiaoshiIdNumber != 'null' ">
+                and jiaoshi.jiaoshi_id_number like CONCAT('%',#{params.jiaoshiIdNumber},'%')
+            </if>
+            <if test=" params.jiaoshiEmail != '' and params.jiaoshiEmail != null and params.jiaoshiEmail != 'null' ">
+                and jiaoshi.jiaoshi_email like CONCAT('%',#{params.jiaoshiEmail},'%')
+            </if>
+                <!-- 判断课题信息的id不为空 -->
+            <if test=" params.ketiIdNotNull != '' and params.ketiIdNotNull != null and params.ketiIdNotNull != 'null' ">
+                and a.keti_id IS NOT NULL
+            </if>
+            <if test=" params.ketiName != '' and params.ketiName != null and params.ketiName != 'null' ">
+                and keti.keti_name like CONCAT('%',#{params.ketiName},'%')
+            </if>
+            <if test="params.ketiTypes != null  and params.ketiTypes != ''">
+                and keti.keti_types = #{params.ketiTypes}
+            </if>
+
+            <if test=" params.ketiText != '' and params.ketiText != null and params.ketiText != 'null' ">
+                and keti.keti_text like CONCAT('%',#{params.ketiText},'%')
+            </if>
+            <if test="params.ketiYesnoTypes != null  and params.ketiYesnoTypes != ''">
+                and keti.keti_yesno_types = #{params.ketiYesnoTypes}
+            </if>
+
+            <if test=" params.ketiYesnoText != '' and params.ketiYesnoText != null and params.ketiYesnoText != 'null' ">
+                and keti.keti_yesno_text like CONCAT('%',#{params.ketiYesnoText},'%')
+            </if>
+                <!-- 判断学生的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuUuidNumber != '' and params.yonghuUuidNumber != null and params.yonghuUuidNumber != 'null' ">
+                and yonghu.yonghu_uuid_number like CONCAT('%',#{params.yonghuUuidNumber},'%')
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuAddress != '' and params.yonghuAddress != null and params.yonghuAddress != 'null' ">
+                and yonghu.yonghu_address like CONCAT('%',#{params.yonghuAddress},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.xueyuanTypes != null  and params.xueyuanTypes != ''">
+                and yonghu.xueyuan_types = #{params.xueyuanTypes}
+            </if>
+
+            <if test="params.banjiTypes != null  and params.banjiTypes != ''">
+                and yonghu.banji_types = #{params.banjiTypes}
+            </if>
+
+            <if test="params.yonghuDeleteStart != null  and params.yonghuDeleteStart != '' ">
+                <![CDATA[  and yonghu.yonghu_delete >= #{params.yonghuDeleteStart}   ]]>
+            </if>
+            <if test="params.yonghuDeleteEnd != null  and params.yonghuDeleteEnd != '' ">
+                <![CDATA[  and yonghu.yonghu_delete <= #{params.yonghuDeleteEnd}   ]]>
+            </if>
+            <if test="params.yonghuDelete != null  and params.yonghuDelete != '' ">
+                and yonghu.yonghu_delete = #{params.yonghuDelete}
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
